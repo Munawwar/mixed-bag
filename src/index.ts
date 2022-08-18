@@ -489,9 +489,9 @@ const idCounter: Record<string, number> = {};
 /**
  * Generates a unique ID
  */
-export function uniqueId(prefix = "$smoldash$") {
+export function uniqueId(prefix = "$uid$") {
 	const id = (idCounter[prefix] = (idCounter[prefix] || 0) + 1);
-	return "" + (prefix === "$smoldash$" ? "" : prefix) + id;
+	return "" + (prefix === "$uid$" ? "" : prefix) + id;
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types

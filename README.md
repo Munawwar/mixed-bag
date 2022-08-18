@@ -1,12 +1,10 @@
-![Smoldash logo](/smoldash.svg)
+![`Mixed bag` bundle size](https://img.badgesize.io/https:/cdn.jsdelivr.net/npm/mixed-bag@0.12.0/dist/esm/index.min.js?compression=gzip)
 
-![Smoldash bundle size](https://img.badgesize.io/https:/cdn.jsdelivr.net/npm/smoldash@0.11.0/dist/esm/index.min.js?compression=gzip)
-
-# Smoldash - Tiny 2kb Lodash alternative
-
-_Note: This library hasn't been battle tested yet. There may be bugs, although none have been reported so far._
+# `Mixed Bag` - Tiny 2kb Lodash alternative
 
 Lodash is an amazing utility library for JavaScript, but with recent additions to the ECMAScript much of it can be replaced with vanilla features. This library aims to be a thinner alternative with modern browsers in mind.
+
+_Note: This library hasn't been battle tested yet. Help us test it out._
 
 Supported functions:
 
@@ -87,11 +85,15 @@ Supported functions:
 ## Installation
 
 ```bash
-npm install smoldash
+npm install mixed-bag
 # or via yarn
-yarn add smoldash
+yarn add mixed-bag
 ```
 
 ## License
 
 MIT, see [the LICENSE file](./LICENSE)
+
+## Credits
+
+This project was forked from [smoldash](https://github.com/marvinhagemeister/smoldash)

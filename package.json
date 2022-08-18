@@ -1,6 +1,6 @@
 {
-	"name": "smoldash",
-	"version": "0.11.0",
+	"name": "mixed-bag",
+	"version": "0.12.0",
 	"description": "A modern lodash variant for modern browsers",
 	"main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
@@ -14,8 +14,7 @@
 		"./": "./"
 	},
 	"files": [
-		"dist/",
-		"smoldash.svg"
+		"dist/"
 	],
 	"scripts": {
 		"build": "rimraf dist/ && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && ts-node tools/postbuild.ts",
@@ -25,7 +24,7 @@
 		"test-one": "mocha -r ts-node/register --extensions ts,tsx",
 		"prepublishOnly": "npm test && npm run build"
 	},
-	"author": "Marvin Hagemeister <hello@marvinh.dev>",
+	"author": "Munawwar",
 	"license": "MIT",
 	"dependencies": {},
 	"devDependencies": {
@@ -59,7 +58,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/marvinhagemeister/smoldash"
+		"url": "https://github.com/Munawwar/mixed-bag"
 	},
 	"eslintConfig": {
 		"extends": [

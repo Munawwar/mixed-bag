@@ -1,2 +1,4 @@
 src/
 tsconfig*
+TODO.txt
+yarn.lock
