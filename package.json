@@ -1,7 +1,11 @@
 {
 	"name": "mixed-bag",
-	"version": "0.12.0",
+	"version": "0.12.1",
 	"description": "A modern lodash variant for modern browsers",
+	"keywords": [
+		"lodash",
+		"lodash alternative"
+	],
 	"main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
 	"types": "dist/types/index.d.ts",
