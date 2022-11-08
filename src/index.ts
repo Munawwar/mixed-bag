@@ -14,8 +14,10 @@ export function castArray<T>(v?: T | T[]): T[] {
 	return isArray(v) ? v : [v];
 }
 
-// Defensively create an array if not one. Almost like a constructor
-function createArray(arr: any) {
+/**
+ * (Non-lodash function) Defensively create an array if not one.
+ */
+export function createArray(arr: any) {
 	return isArray(arr) ? arr : [];
 }
 
@@ -104,25 +106,29 @@ const createPredicate = <T>(
 	return fn;
 };
 
-/**
- * Creates an array of `arr` values not included in the other given arrays.
- * The order and references of result values are determined by the first array.
- */
-export function difference<T>(arr: readonly T[], ...values: readonly T[][]) {
-	const uniqValues = new Set(values.flatMap(identity));
-	return createArray(arr).filter(item => !uniqValues.has(item));
+export function intersectionBy<T, K extends keyof T, Out>(
+	...args: readonly (T[] | IterateeConvertibleTypes<T, K, Out>)[]
+) {
+	const arrays = args.slice(0, -1) as readonly T[][];
+	const iteratee = args.slice(-1)[0] as IterateeConvertibleTypes<T, K, Out>;
+	const fn = createIteratee<T, K>(iteratee as any);
+	const counter = new Map<any, { count: number; item: T }>();
+	createArray(arrays).forEach(array => {
+		createArray(array).forEach((item, index, arr) => {
+			const key = fn(item, index, arr);
+			counter.set(key, {
+				count: (counter.get(key) || { count: 0 }).count + 1,
+				item: (counter.get(key) || { item }).item,
+			});
+		});
+	});
+	return Array.from(counter.values())
+		.filter(({ count }) => count == arrays.length)
+		.map(({ item }) => item);
 }
 
 export function intersection<T>(...arrays: readonly T[][]) {
-	const counter = new Map();
-	arrays.forEach(array => {
-		array.forEach(item => {
-			counter.set(item, (counter.get(item) || 0) + 1);
-		});
-	});
-	return Array.from(counter.entries())
-		.filter(([, count]) => count == arrays.length)
-		.map(([item]) => item);
+	return intersectionBy(...arrays, identity);
 }
 
 /**
@@ -161,26 +167,6 @@ export function sortBy<T>(arr: T[], keys: Array<keyof T>): T[] {
 }
 
 /**
- * Take out the first N items of an array
- */
-export function take<T>(arr: T[], n: number): T[] {
-	return createArray(arr).slice(0, n);
-}
-
-/**
- * Get the first element of an array
- */
-// TODO: What value is this?
-export function head<T>(arr: T[]): T | undefined {
-	return createArray(arr)[0];
-}
-/**
- * Gets all but the last element of array.
- */
-export function initial<T>(arr: T[]): T[] {
-	return take(arr, -1);
-}
-/**
  * Get the last element of an array
  */
 export function last<T>(arr: T[]): T | undefined {
@@ -192,23 +178,6 @@ export function last<T>(arr: T[]): T | undefined {
  */
 export function reverse<T>(arr: T[]): T[] {
 	return createArray(arr).slice().reverse();
-}
-
-/**
- * Converts all elements in array into a string separated by separator.
- */
-export function join<T>(arr: T[], separator?: string) {
-	return createArray(arr).join(separator);
-}
-/**
- * Splits string by separator.
- */
-export function split(
-	string: string,
-	separator: string | RegExp,
-	limit?: number,
-) {
-	return string.split(separator, limit);
 }
 
 /**
@@ -416,48 +385,21 @@ export function forEach<T>(
 	} else if (value instanceof Set || value instanceof Map) {
 		value.forEach(callback as any);
 	} else if (isObjectLike(value)) {
-		Object.keys(value).forEach(key => {
+		Object.keys(value as any).forEach(key => {
 			callback((value as any)[key], key, value);
 		});
 	}
 }
 
 /**
- * Get index of an item in an array
- */
-export function indexOf<T>(arr: T[], value: T, startIndex = 0): number {
-	if (!isArray(arr)) return -1;
-	if (startIndex === 0) return arr.indexOf(value);
-
-	for (let i = startIndex; i < arr.length; i++) {
-		if (arr[i] === value) return i;
-	}
-	return -1;
-}
-
-// TODO: Compress this or remove it
-export function includes<T>(arr: T[], value: T, startIndex = 0): boolean {
-	return indexOf(arr, value, startIndex) > -1;
-}
-
-/**
- * Get items of an array from start index to end index.
- */
-// TODO: Compress this or remove it
-export function slice<T>(arr: T[], startIndex: number, endIndex?: number): T[] {
-	return createArray(arr).slice(startIndex, endIndex);
-}
-
-/**
  * Flatten an array by a single level
  */
-// TODO: Compress this or remove it
 export function flatten(arr: any) {
 	return createArray(arr).flatMap(x => x);
 }
 
 /**
- * Concat values into array like native Array.prototype.concat
+ * Creates an array of elements split into groups the length of size.
  */
 export function chunk(arr: any[], size = 1) {
 	arr = createArray(arr);
@@ -466,14 +408,6 @@ export function chunk(arr: any[], size = 1) {
 		chunks.push(arr.slice(i, i + size));
 	}
 	return chunks;
-}
-
-/**
- * Concat values into array like native Array.prototype.concat
- */
-// TODO: Compress this or remove it
-export function concat(arr: any[], ...args: any[]) {
-	return createArray(arr).concat(...args);
 }
 
 /**
@@ -508,32 +442,76 @@ export function once<T extends (...args: any[]) => any>(fn: T): T {
 }
 
 /**
- * Create a duplicate free version of an array
- */
-export function uniq<T>(arr: T[]): T[] {
-	return Array.from(new Set(createArray(arr)).values());
-}
-
-/**
  * Create a duplicate free version of an array by a user iteratee
  */
-export function uniqBy<T, R = any>(arr: T[], iteratee: R | ((v: T) => R)) {
-	const seen = new Map<R, T>();
-	const type = typeof iteratee;
-
-	createArray(arr).forEach(item => {
-		let key: any = iteratee;
-		if (type === "string" && isObjectLike(item)) {
-			key = (item as any)[iteratee];
-		} else if (type === "function") {
-			key = (iteratee as any)(item);
-		}
+export function uniqBy<T, K extends keyof T, Out>(
+	array: readonly T[],
+	iteratee: IterateeConvertibleTypes<T, K, Out>,
+) {
+	const seen = new Map<any, T>();
+	const fn = createIteratee<T, K>(iteratee as any);
+	createArray(array).forEach((item, index, arr) => {
+		const key = fn(item, index, arr);
 		if (!seen.has(key)) {
 			seen.set(key, item);
 		}
 	});
-
 	return Array.from(seen.values());
+}
+
+/**
+ * Create a duplicate free version of an array
+ */
+export function uniq<T>(arr: T[]): T[] {
+	return uniqBy(arr, identity);
+}
+
+export function differenceBy<T, K extends keyof T, Out>(
+	arr: readonly T[],
+	...valuesRaw: readonly (T[] | IterateeConvertibleTypes<T, K, Out>)[]
+): T[] {
+	const values = valuesRaw.slice(0, -1) as readonly T[][];
+	const iteratee = valuesRaw.slice(-1)[0] as IterateeConvertibleTypes<
+		T,
+		K,
+		Out
+	>;
+	const fn = createIteratee<T, K>(iteratee as any);
+	const uniqValues = new Set(values.flatMap(identity).map(fn));
+	return createArray(arr).filter(
+		(item, index, arr2) => !uniqValues.has(fn(item, index, arr2)),
+	);
+}
+
+/**
+ * Creates an array of `arr` values not included in the other given arrays.
+ * The order and references of result values are determined by the first array.
+ */
+export function difference<T>(
+	arr: readonly T[],
+	...values: readonly T[][]
+): T[] {
+	const uniqValues = new Set(values.flatMap(identity));
+	return createArray(arr).filter(item => !uniqValues.has(item));
+}
+
+/**
+ * Creates an array of unique values (in-order).
+ */
+export function union<T>(...arrays: readonly T[][]): T[] {
+	return uniqBy(createArray(arrays).flatMap(createArray), identity);
+}
+
+/**
+ * Creates an array of unique values (in-order), using return value of iteratee
+ * of each item, for determining the criteria for uniqueness.
+ */
+export function unionBy<T, K extends keyof T, Out>(
+	...args: readonly (T[] | IterateeConvertibleTypes<T, K, Out>)[]
+): T[] {
+	const arrays = args.slice(0, -1) as readonly T[][];
+	const iteratee = args.slice(-1)[0] as IterateeConvertibleTypes<T, K, Out>;
+	return uniqBy(createArray(arrays).flatMap(createArray), iteratee);
 }
 
 export type AnyFunction = (...args: any[]) => any;
@@ -643,16 +621,16 @@ export function findIndex<T>(
 }
 
 /**
- * Iterate the collection and return the index of the element where the predicate returns true
+ * Iterate the collection and return the index of the last element where the predicate returns true
  */
 export function findLastIndex<T>(
 	collection: T[],
 	predicate: PredicateConvertibleTypes<T> = x => !!x,
-	fromIndex = collection.length - 1,
+	fromIndex = 0,
 ): number {
 	if (!isArray(collection)) return -1;
 	const fn = createPredicate(predicate);
-	for (let i = fromIndex; i >= 0; i--) {
+	for (let i = collection.length - 1; i >= fromIndex; i--) {
 		if ((fn as any)(collection[i], i, collection)) {
 			return i;
 		}
@@ -669,6 +647,18 @@ export function find<T>(
 	fromIndex = 0,
 ): T | undefined {
 	const index = findIndex(collection, predicate, fromIndex);
+	return index < 0 ? undefined : collection[index];
+}
+
+/**
+ * Iterate the collection and return the last element where the predicate returns true
+ */
+export function findLast<T>(
+	collection: T[],
+	predicate: PredicateConvertibleTypes<T> = x => !!x,
+	fromIndex = 0,
+): T | undefined {
+	const index = findLastIndex(collection, predicate, fromIndex);
 	return index < 0 ? undefined : collection[index];
 }
 
@@ -934,4 +924,75 @@ export function defaultsDeep(target: any, ...sources: any[]) {
 		}
 	}
 	return target;
+}
+
+/**
+ * Clamps `number` within the inclusive `lower` and `upper` bounds.
+ * If `upper` is skipped, then second argument is considered to be the upper bound and lower bound considered `-Infinity`.
+ */
+export function clamp(number: number, lower: number, upper?: number) {
+	if (lower === undefined) return number;
+	if (upper === undefined) {
+		upper = lower;
+		lower = -Infinity;
+	}
+	return Math.max(Math.min(number, upper), lower);
+}
+
+/**
+ * Checks if `number` is between `start` and up to, but not including, `end`.
+ * If `end` is not specified, it's set to `start` with `start` then set to `0`.
+ * If `start` is greater than `end` the params are swapped to support negative ranges.
+ */
+export function inRange(number: number, start: number, end?: number) {
+	if (end === undefined) {
+		end = start;
+		start = 0;
+	}
+	const lower = Math.min(start, end);
+	const upper = Math.max(start, end);
+	return number >= lower && number < upper;
+}
+
+// escape and unescape functions
+
+const reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
+const reUnescapedHtml = /[&<>"']/g;
+const reHasEscapedHtml = RegExp(reEscapedHtml.source);
+const reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
+const htmlEscapes = {
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&quot;",
+	"'": "&#39;",
+};
+const htmlUnescapes = {
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+	"&quot;": '"',
+	"&#39;": "'",
+};
+
+function escapeHtmlChar(key: keyof typeof htmlEscapes): string {
+	return htmlEscapes[key];
+}
+
+function unescapeHtmlChar(key: keyof typeof htmlUnescapes): string {
+	return htmlUnescapes[key];
+}
+
+export function escape(string: string) {
+	string = String(string);
+	return string && reHasUnescapedHtml.test(string)
+		? string.replace(reUnescapedHtml, escapeHtmlChar as (k: string) => string)
+		: string;
+}
+
+export function unescape(string: string) {
+	string = String(string);
+	return string && reHasEscapedHtml.test(string)
+		? string.replace(reEscapedHtml, unescapeHtmlChar as (k: string) => string)
+		: string;
 }

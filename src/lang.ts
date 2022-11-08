@@ -38,3 +38,31 @@ export function isPlainObject(val: any) {
 export function isUndefined(v: any) {
 	return v === undefined;
 }
+
+export function isInteger(v: any) {
+	return Number.isFinite(v) && v === Math.trunc(v);
+}
+
+export function isString(v: any) {
+	return Number.isFinite(v) && v === Math.trunc(v);
+}
+
+const typedArrayProto = Object.getPrototypeOf(Int8Array);
+export function isTypedArray(v: any) {
+	return Object.getPrototypeOf(v) === typedArrayProto;
+}
+
+export function isSymbol(v: any) {
+	return typeof v === "symbol";
+}
+
+export function toArray(v: any) {
+	if (!v || "length" in v) {
+		return Array.from(v);
+	}
+	return Object.values(v);
+}
+
+export function defaultTo(v: any, defaultValue: any) {
+	return v == null || v !== v ? defaultValue : v;
+}

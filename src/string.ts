@@ -1,12 +1,21 @@
+function splitCasedWords(val: string, separator = " ") {
+	return String(val)
+		.replace(/[^\p{L}\p{Nd}]+/gu, separator) // replace non-alphanumeric characters
+		.replace(/(\p{Lu}\p{Ll})/gu, `${separator}$1`) // e.g. "Ab" -> " Ab"
+		.replace(/(\p{Ll}\p{Lu}|\p{L}\p{Nd}|\p{Nd}\p{L})/gu, m =>
+			m.split("").join(separator),
+		); // e.g. "aB" -> "a B" or "A1" -> "A 1" or "1A" -> "1 A"
+}
+
 /**
  * Convert string to camel case
  */
 export function camelCase(val: string) {
-	return String(val)
-		.replace(/[^\p{L}\p{Nd}]+/gu, " ") // replace non-alphanumeric characters
-		.replace(/(\p{Lu}\p{Ll})/gu, " $1") // e.g. "Ab" -> " Ab"
-		.replace(/ \p{Ll}/gu, m => m.toUpperCase()) // e.g. " a" -> " A"
-		.replace(/(\p{Lu})(\p{Lu}+)/gu, (m, g1, g2) => `${g1}${g2.toLowerCase()}`) // e.g HTML -> Html
+	return splitCasedWords(val)
+		.replace(
+			/(\p{L})(\p{L}*)/gu,
+			(m, g1, g2 = "") => `${g1.toUpperCase()}${g2.toLowerCase()}`,
+		) // e.g HTML -> Html
 		.replace(/^[ ]*\p{Lu}+/u, m => m.toLowerCase()) // downcase the first set of capital letters
 		.replace(/ /g, "");
 }
@@ -15,26 +24,17 @@ export function camelCase(val: string) {
  * Convert string to snake case
  */
 export function snakeCase(val: string) {
-	return String(val)
-		.replace(/[^\p{L}\p{Nd}]+/gu, " ") // replace non-alphanumeric characters
-		.trim()
-		.replace(/(\p{Ll})(\p{Lu}+)/gu, m => m.split("").join("_")) // e.g. aBC => a_B_C
-		.replace(/(\p{L})(\p{Nd})/gu, "$1_$2") // e.g. s1 => s_1
-		.replace(/ /g, "_")
-		.replace(/[^_\p{L}\p{Nd}]/gu, "") // remove non-alphanumeric + _ characters
+	return splitCasedWords(val, "_")
+		.replace(/[_]{2,}/g, "_")
+		.replace(/(^_|_$)/g, "")
 		.toLowerCase();
 }
 
 /**
  * Convert string to kebab case
  */
-export function kebabCase(input: string) {
-	return String(input)
-		.replace(/[^\p{L}\p{Nd}]+/gu, "-") // replace non-alphanumeric characters
-		.replace(/(\p{Lu}\p{Ll})/gu, "-$1") // e.g. Ab -> -Ab
-		.replace(/(\p{Ll}\p{Lu}|\p{L}\p{Nd}|\p{Nd}\p{L})/gu, m =>
-			m.split("").join("-"),
-		) // e.g. aB -> a-B or A1 -> A-1 or 1A -> 1-A
+export function kebabCase(val: string) {
+	return splitCasedWords(val, "-")
 		.replace(/[-]{2,}/g, "-")
 		.replace(/(^-|-$)/g, "")
 		.toLowerCase();
@@ -44,32 +44,49 @@ export function kebabCase(input: string) {
  * Convert string to start case
  */
 export function startCase(val: string) {
-	return (
-		String(val)
-			.replace(/[^\p{L}\p{Nd}]+/gu, " ") // replace non-alphanumeric characters
-			.replace(/(\p{Lu}\p{Ll})/gu, " $1") // e.g. "Ab" -> " Ab"
-			.replace(/(\p{Ll}\p{Lu}|\p{L}\p{Nd}|\p{Nd}\p{L})/gu, m =>
-				m.split("").join(" "),
-			) // e.g. "aB" -> "a B" or "A1" -> "A 1" or "1A" -> "1 A"
-			// .replace(/[^ ][A-Z]+/g, m => m.split('').join(' '))
-			.replace(/(^| )[^ ]/g, m => m.toUpperCase())
-			.replace(/[ ]{2,}/g, " ")
-			.trim()
-	);
+	return splitCasedWords(val)
+		.replace(/(^| )[^ ]/g, m => m.toUpperCase())
+		.replace(/[ ]{2,}/g, " ")
+		.trim();
 }
 
 /**
  * Capitalizes first letter and lower cases the rest
  */
 export function capitalize(val: string) {
-	return String(val)
-		.toLowerCase()
-		.replace(/^./, m => m.toUpperCase());
+	const parts = [...String(val).toLowerCase()];
+	parts[0] = parts[0].toUpperCase();
+	return parts.join("");
 }
 
 /**
- * Capitalizes first letter
+ * Lower cases first letter (handles unicode)
+ */
+export function lowerFirst(val: string) {
+	const parts = [...String(val)];
+	parts[0] = parts[0].toLowerCase();
+	return parts.join("");
+}
+
+/**
+ * Capitalizes first letter (handles unicode)
  */
 export function upperFirst(val: string) {
-	return String(val).replace(/^./, m => m.toUpperCase());
+	const parts = [...String(val)];
+	parts[0] = parts[0].toUpperCase();
+	return parts.join("");
+}
+
+/**
+ * Splits pascal/camel/snake case words and lower cases them.
+ */
+export function lowerCase(val: string) {
+	return splitCasedWords(val).trim().toLowerCase();
+}
+
+/**
+ * Splits pascal/camel/snake case words and upper cases them.
+ */
+export function upperCase(val: string) {
+	return splitCasedWords(val).trim().toUpperCase();
 }

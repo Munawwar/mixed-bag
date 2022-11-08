@@ -17,4 +17,11 @@ describe("snakeCase", () => {
 			"test_this_w_str_01_β_β_ε_β",
 		);
 	});
+
+	it("should snakeCase continuos caps", () => {
+		expect(snakeCase(" HTMLElement")).toEqual("html_element");
+		expect(snakeCase("HTMLElement")).toEqual("html_element");
+		expect(snakeCase("previousHTMLElement")).toEqual("previous_html_element");
+		expect(snakeCase(" previousHTMLElement")).toEqual("previous_html_element");
+	});
 });
