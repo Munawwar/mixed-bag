@@ -96,5 +96,6 @@
 			"no-console": "error",
 			"no-mixed-spaces-and-tabs": "off"
 		}
-	}
+	},
+	"sideEffects": false
 }
