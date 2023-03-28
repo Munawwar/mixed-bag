@@ -709,27 +709,6 @@ export function reduce<T, K extends keyof T, Out>(
 }
 
 /**
- * Sums up the result of iteratee over a collection
- * (iteratee derives computes its value for each item of the collection)
- */
-export function sumBy<
-	T extends { [Key: string | number]: number },
-	K extends keyof T
->(
-	collection: T[],
-	iteratee: K | ((item: T, index: number, collection: T[]) => number) = (
-		x: T,
-	) => (x as unknown) as number,
-): number {
-	const fn = createIteratee<T, K>(iteratee as any);
-	return createArray(collection).reduce(
-		(sum: number, item, index, arr) =>
-			sum + ((fn(item, index, arr) as unknown) as number),
-		0,
-	);
-}
-
-/**
  * Returns new collection with each element as result of it being called on iteratee function
  */
 
@@ -995,4 +974,107 @@ export function unescape(string: string) {
 	return string && reHasEscapedHtml.test(string)
 		? string.replace(reEscapedHtml, unescapeHtmlChar as (k: string) => string)
 		: string;
+}
+
+export function sum(array: number[]) {
+	return createArray(array).reduce((count, val) => count + val, 0);
+}
+
+/**
+ * Sums up the result of iteratee over a collection
+ * (iteratee derives computes its value for each item of the collection)
+ */
+export function sumBy<T, K extends keyof T, Out>(
+	array: T[],
+	iteratee: IterateeConvertibleTypes<T, K, Out>,
+) {
+	return map(array, iteratee as (...args: any[]) => number).reduce(
+		(count, val) => count + val,
+		0,
+	);
+}
+
+export function countBy<T, K extends keyof T, Out>(
+	array: T[],
+	iteratee: IterateeConvertibleTypes<T, K, Out>,
+): { [key: string]: number } {
+	return map(array, iteratee as (...args: any[]) => number).reduce(
+		(acc, val) => {
+			acc[val] = (acc[val] || 0) + 1;
+			return acc;
+		},
+		{} as { [key: string]: number },
+	);
+}
+
+export function maxBy<T, K extends keyof T, Out>(
+	array: T[],
+	iteratee: IterateeConvertibleTypes<T, K, Out>,
+) {
+	const fn = createIteratee<T, K, Out>(iteratee as any);
+	let max: Out;
+	return createArray(array).reduce((maxItem, item, index) => {
+		const val = fn(item, index, array);
+		if (val > max || max === undefined) {
+			max = val;
+			return item;
+		}
+		return maxItem;
+	}, undefined);
+}
+
+export function minBy<T, K extends keyof T, Out>(
+	array: T[],
+	iteratee: IterateeConvertibleTypes<T, K, Out>,
+) {
+	const fn = createIteratee<T, K, Out>(iteratee as any);
+	let min: Out;
+	return createArray(array).reduce((minItem, item, index) => {
+		const val = fn(item, index, array);
+		if (val < min || min === undefined) {
+			min = val;
+			return item;
+		}
+		return minItem;
+	}, undefined);
+}
+
+export function mean(arr: number[]) {
+	if (!Array.isArray(arr)) return NaN;
+	return sum(arr) / arr?.length;
+}
+
+export function meanBy<T, K extends keyof T, Out>(
+	array: T[],
+	iteratee: IterateeConvertibleTypes<T, K, Out>,
+) {
+	return mean(map(array, iteratee as (...args: any[]) => number));
+}
+
+export function invert(obj: {
+	[key: string | number]: string | number;
+}): { [key: string]: string } {
+	if (obj === null || typeof obj !== "object") return {};
+	return Object.entries(obj).reduce((acc, [key, val]) => {
+		acc[val] = key;
+		return acc;
+	}, {} as { [key: string]: string });
+}
+
+export function invertBy(
+	obj: { [key: string]: string | number },
+	iteratee: (
+		val: string | number,
+		key: string,
+		obj2: typeof obj,
+	) => string | number = identity,
+): { [key: string]: string[] } {
+	if (obj === null || typeof obj !== "object") return {};
+	const fn = iteratee || identity;
+	return Object.entries(obj).reduce((acc, [key, val]) => {
+		const mappedVal = String(fn(val, key, obj));
+		if (!acc[mappedVal]) acc[mappedVal] = [];
+		acc[mappedVal].push(key);
+		return acc;
+	}, {} as { [k: string]: string[] });
 }

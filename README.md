@@ -17,15 +17,16 @@ Supported functions:
 - `_.clone`
 - `_.cloneDeep`
 - `_.compact`
+- `_.countBy`
 - `_.defaultsDeep` (only considers own properties)
 - `_.defaultTo`
 - `_.difference`
 - `_.differenceBy`
 - `_.every`
-- `_.findIndex`
-- `_.findLastIndex`
 - `_.find`
+- `_.findIndex`
 - `_.findLast`
+- `_.findLastIndex`
 - `_.filter`
 - `_.flatten`
 - `_.flatMap`
@@ -38,6 +39,8 @@ Supported functions:
 - `_.inRange`
 - `_.intersection`
 - `_.intersectionBy`
+- `_.invert`
+- `_.invertBy`
 - `_.isInteger`
 - `_.isObject`
 - `_.isObjectLike`
@@ -57,6 +60,10 @@ Supported functions:
 - `_.lowerFirst`
 - `_.map`
 - `_.escape`
+- `_.maxBy`
+- `_.mean`
+- `_.meanBy`
+- `_.minBy`
 - `_.mapKeys`
 - `_.mapValues`
 - `_.merge`
@@ -73,6 +80,7 @@ Supported functions:
 - `_.some`
 - `_.sortBy`
 - `_.startCase`
+- `_.sum`
 - `_.sumBy`
 - `_.toArray`
 - `_.unescape`
@@ -113,13 +121,7 @@ This project was forked from [smoldash](https://github.com/marvinhagemeister/smo
 ```
 _.ary
 _.debounce
-_.invert
-_.maxBy
-_.mean
-_.meanBy
-_.minBy
 _.reject
-_.sum
 _.throttle
 _.unzip
 _.without
@@ -163,11 +165,9 @@ _.xorWith
 _.zipObject
 _.zipObjectDeep
 _.zipWith
-_.countBy
 _.each
 _.eachRight
 _.forEachRight
-_.findLast
 _.flatMapDeep
 _.flatMapDepth
 _.forEachRight
@@ -238,7 +238,6 @@ _.forOwnRight
 _.functions
 _.functionsIn
 _.hasIn
-_.invertBy
 _.invoke
 _.keys
 _.keysIn
