@@ -34,6 +34,15 @@ export type IterateeConvertibleTypes<T, K extends keyof T, Out> =
 	| Partial<T>
 	| ((item: T, index: number, collection: T[]) => Out);
 
+/**
+ * Support form:
+ * - 'key'
+ * - function
+ */
+export type IterateeReturnConvertibleTypes<T, K extends keyof T, Out> =
+	| K
+	| ((item: T, index: number, collection: T[]) => Out);
+
 // variation - "user"
 export function iteratee<T, K extends keyof T>(
 	iter: K,
@@ -1077,4 +1086,74 @@ export function invertBy(
 		acc[mappedVal].push(key);
 		return acc;
 	}, {} as { [k: string]: string[] });
+}
+
+/**
+ * Creates an array excluding all given values using exact equality comparisons.
+ */
+export function without<T>(collection: T[], ...args: T[]): T[] {
+	const toExclude = new Set(args);
+	return createArray(collection).filter(item => !toExclude.has(item));
+}
+
+/**
+ * Creates an array of unique values that is the symmetric difference of the given arrays.
+ * The order of result values is determined by the order they occur in the arrays.
+ */
+export function xor<T>(...arrays: T[][]): T[] {
+	const countByItem = new Map<T, number>();
+	createArray(arrays).forEach(array => {
+		const set = new Set(createArray(array));
+		for (const val of set.values()) {
+			countByItem.set(val, (countByItem.get(val) || 0) + 1);
+		}
+	});
+	const result: T[] = [];
+	for (const [val, count] of countByItem.entries()) {
+		if (count < 2) {
+			result.push(val);
+		}
+	}
+	return result;
+}
+
+/**
+ * This method is like `_.xor` except that it accepts iteratee which is invoked for each element of each arrays
+ * to generate the criterion by which by which they're compared. The order of result values is determined by the
+ * order they occur in the arrays.
+ */
+export function xorBy<T, K extends keyof T, Out>(
+	...args: (T[] | IterateeReturnConvertibleTypes<T, K, Out>)[]
+): T[] {
+	if (args.length < 3) return [];
+	const iteratee = args.pop() as IterateeReturnConvertibleTypes<T, K, Out>;
+	const arrays = args as T[][];
+
+	const fn = createIteratee<T, K, Out>(iteratee as any);
+	if (typeof fn !== "function") return [];
+
+	const countByKey = new Map<Out, { count: number; item: T }>();
+	createArray(arrays).forEach((array: T[]) => {
+		const deduplicateMap = new Map<Out, T>();
+		createArray(array).forEach((item: T, index: number) => {
+			const key = fn(item, index, array);
+			if (!deduplicateMap.has(key)) {
+				deduplicateMap.set(key, item);
+			}
+		});
+		for (const [key, item] of deduplicateMap.entries()) {
+			const prevVal = countByKey.get(key) || { count: 0 };
+			countByKey.set(key, {
+				count: prevVal.count + 1,
+				item: "item" in prevVal ? prevVal.item : item,
+			});
+		}
+	});
+	const result: T[] = [];
+	for (const { count, item } of countByKey.values()) {
+		if (count < 2) {
+			result.push(item);
+		}
+	}
+	return result;
 }

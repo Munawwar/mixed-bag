@@ -92,6 +92,9 @@ Supported functions:
 - `_.upperCase`
 - `_.upperFirst`
 - `_.unset`
+- `_.without`
+- `_.xor`
+- `_.xorBy`
 
 ## Differences from lodash
 
@@ -124,9 +127,6 @@ _.debounce
 _.reject
 _.throttle
 _.unzip
-_.without
-_.xor
-_.xorBy
 _.zip
 ```
 
