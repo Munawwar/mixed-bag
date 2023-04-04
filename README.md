@@ -1,6 +1,6 @@
 ![`Mixed bag` bundle size](https://img.badgesize.io/https:/cdn.jsdelivr.net/npm/mixed-bag@0.12.0/dist/esm/index.min.js?compression=gzip)
 
-# `Mixed Bag` - Tiny 2kb Lodash alternative
+# `Mixed Bag` - Tiny 3kb Lodash alternative
 
 Lodash is an amazing utility library for JavaScript, but with recent additions to the ECMAScript much of it can be replaced with vanilla features. This library aims to be a thinner alternative with modern browsers in mind.
 
@@ -124,8 +124,10 @@ This project was forked from [smoldash](https://github.com/marvinhagemeister/smo
 ```
 _.ary
 _.debounce
+_.defaults
 _.reject
 _.throttle
+_.uniqWith
 _.unzip
 _.zip
 ```
@@ -159,7 +161,6 @@ _.sortedUniqBy
 _.takeRightWhile
 _.takeWhile
 _.unionWith
-_.uniqWith
 _.unzipWith
 _.xorWith
 _.zipObject
@@ -174,9 +175,6 @@ _.forEachRight
 _.invokeMap
 _.partition
 _.reduceRight
-_.sample
-_.sampleSize
-_.shuffle
 _.size
 _.after
 _.before
@@ -222,7 +220,6 @@ _.assignIn
 _.assignInWith
 _.assignWith
 _.create
-_.defaults
 _.entries (handles maps and sets)
 _.entriesIn
 _.toPairs (handles maps and sets)
@@ -377,4 +374,7 @@ _.tap, _.thru (obsoleted by chain alternative)
 _.bindKey (too niche use case)
 _.isElement (there isn't a sure way of detecting elements in DOM-like environments like jsdom without access to window object)
 _.isNative (lodash has a note saying core-js package will not allow this to work properly)
+_.sample (too specialized for a general util library)
+_.sampleSize (too specialized for a general util library)
+_.shuffle (too specialized for a general util library. I'd manually add https://github.com/angus-c/just/tree/master/packages/array-shuffle if needed)
 ```
