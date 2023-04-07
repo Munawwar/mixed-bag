@@ -1,12 +1,15 @@
 import { isObjectLike } from "./lang";
 export * from "./lang";
 export * from "./string";
+export * from "./chain";
 
 const { isArray } = Array;
 
 export function identity<T>(v: T): T {
 	return v;
 }
+
+export const noop = () => undefined;
 
 export function castArray<T>(v?: T | T[]): T[] {
 	if (!arguments.length) return [];
@@ -475,6 +478,35 @@ export function uniq<T>(arr: T[]): T[] {
 	return uniqBy(arr, identity);
 }
 
+/**
+ * This method is like _.uniq except that it accepts comparator which is invoked to compare elements of array.
+ * The order of result values is determined by the order they occur in the array.
+ * The comparator is invoked with two arguments: (arrVal, othVal).
+ */
+export function uniqWith<T>(
+	arr: T[],
+	comparator: (a: T, b: T) => any = identity,
+): T[] {
+	const uniqItems: T[] = [];
+	for (let arrIndex = 0; arrIndex < arr.length; arrIndex++) {
+		let found = false;
+		for (
+			let uniqItemsIndex = 0;
+			uniqItemsIndex < uniqItems.length;
+			uniqItemsIndex++
+		) {
+			if (comparator(arr[arrIndex], uniqItems[uniqItemsIndex])) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			uniqItems.push(arr[arrIndex]);
+		}
+	}
+	return uniqItems;
+}
+
 export function differenceBy<T, K extends keyof T, Out>(
 	arr: readonly T[],
 	...valuesRaw: readonly (T[] | IterateeConvertibleTypes<T, K, Out>)[]
@@ -679,6 +711,35 @@ export function filter<T>(
 	predicate: PredicateConvertibleTypes<T> = x => !!x,
 ): T[] {
 	return createArray(collection).filter(createPredicate(predicate) as any);
+}
+
+/**
+ * The opposite of `filter` function; this method returns the elements of collection that predicate does not return truthy for.
+ */
+export function reject<T>(
+	collection: T[],
+	predicate: PredicateConvertibleTypes<T> = x => !!x,
+): T[] {
+	const fn = createPredicate(predicate) as any;
+	return createArray(collection).filter((...args) => !fn(...args));
+}
+
+/**
+ * Creates an array of elements split into two groups, the first of which contains elements predicate returns truthy for,
+ * the second of which contains elements predicate returns falsey for. The predicate is invoked with one argument: (value).
+ */
+export function partition<T>(
+	collection: T[],
+	predicate: PredicateConvertibleTypes<T> = x => !!x,
+): [T[], T[]] {
+	const fn = createPredicate(predicate) as any;
+	return createArray(collection).reduce(
+		(accumulator, item, ...args) => {
+			accumulator[fn(item, ...args) ? 0 : 1].push(item);
+			return accumulator;
+		},
+		[[], []] as [T[], T[]],
+	);
 }
 
 /**
@@ -897,6 +958,25 @@ export function mapValues<
  * Recursively merge defaults from source object to target.
  * Unlike lodash, this implementation looks only at own properties (via Object.keys())
  */
+export function defaults(target: any, ...sources: any[]) {
+	if (isObjectLike(target)) {
+		for (let i = 0; i < sources.length; i += 1) {
+			const entries = Object.entries(sources[i]);
+			for (let index = 0; index < entries.length; index += 1) {
+				const [key, value] = entries[index];
+				if (target[key] === undefined) {
+					target[key] = value;
+				}
+			}
+		}
+	}
+	return target;
+}
+
+/**
+ * Recursively merge defaults from source object to target.
+ * Unlike lodash, this implementation looks only at own properties (via Object.keys())
+ */
 export function defaultsDeep(target: any, ...sources: any[]) {
 	if (isObjectLike(target)) {
 		for (let i = 0; i < sources.length; i += 1) {
@@ -1008,9 +1088,9 @@ export function countBy<T, K extends keyof T, Out>(
 	iteratee: IterateeConvertibleTypes<T, K, Out>,
 ): { [key: string]: number } {
 	return map(array, iteratee as (...args: any[]) => number).reduce(
-		(acc, val) => {
-			acc[val] = (acc[val] || 0) + 1;
-			return acc;
+		(accumulator, val) => {
+			accumulator[val] = (accumulator[val] || 0) + 1;
+			return accumulator;
 		},
 		{} as { [key: string]: number },
 	);
@@ -1064,9 +1144,9 @@ export function invert(obj: {
 	[key: string | number]: string | number;
 }): { [key: string]: string } {
 	if (obj === null || typeof obj !== "object") return {};
-	return Object.entries(obj).reduce((acc, [key, val]) => {
-		acc[val] = key;
-		return acc;
+	return Object.entries(obj).reduce((accumulator, [key, val]) => {
+		accumulator[val] = key;
+		return accumulator;
 	}, {} as { [key: string]: string });
 }
 
@@ -1080,11 +1160,11 @@ export function invertBy(
 ): { [key: string]: string[] } {
 	if (obj === null || typeof obj !== "object") return {};
 	const fn = iteratee || identity;
-	return Object.entries(obj).reduce((acc, [key, val]) => {
+	return Object.entries(obj).reduce((accumulator, [key, val]) => {
 		const mappedVal = String(fn(val, key, obj));
-		if (!acc[mappedVal]) acc[mappedVal] = [];
-		acc[mappedVal].push(key);
-		return acc;
+		if (!accumulator[mappedVal]) accumulator[mappedVal] = [];
+		accumulator[mappedVal].push(key);
+		return accumulator;
 	}, {} as { [k: string]: string[] });
 }
 
@@ -1156,4 +1236,18 @@ export function xorBy<T, K extends keyof T, Out>(
 		}
 	}
 	return result;
+}
+
+export function zip(...arrays: any[][]): any[][] {
+	const normalizedArrays = createArray(arrays).map(createArray);
+	const maxLen = Math.max(...normalizedArrays.map(arr => arr.length));
+	const result = [];
+	for (let arrayIndex = 0; arrayIndex < maxLen; arrayIndex++) {
+		result.push(normalizedArrays.map(arr => arr[arrayIndex]));
+	}
+	return result;
+}
+
+export function unzip(arrays: any[][]): any[][] {
+	return zip(...arrays);
 }
