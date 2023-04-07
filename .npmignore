@@ -1,4 +1,5 @@
 src/
 tsconfig*
-TODO.txt
 yarn.lock
+__ignore__/
+.prettierignore
