@@ -116,7 +116,7 @@ _.chain([1,2,3])
 
 ```js
 // chain util
-import { map, flatten, sortBy } from 'mixed-bag'
+import { chain, map, flatten, sortBy } from 'mixed-bag'
 chain([1,2,3])
   .fn(map, x => [x, x*2])
   .fn(flatten)
