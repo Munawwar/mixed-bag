@@ -1,6 +1,6 @@
 ![`Mixed bag` bundle size](https://img.badgesize.io/https:/cdn.jsdelivr.net/npm/mixed-bag@0.12.0/dist/esm/index.min.js?compression=gzip)
 
-# `Mixed Bag` - Tiny 3kb Lodash alternative
+# `Mixed Bag` - Tiny 5kb Lodash alternative
 
 Lodash is an amazing utility library for JavaScript, but with recent additions to the ECMAScript much of it can be replaced with vanilla features. This library aims to be a thinner alternative with modern browsers in mind.
 
