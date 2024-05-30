@@ -1,7 +1,7 @@
 type ParametersExceptFirst<F> = F extends (arg0: any, ...rest: infer P) => any ? P : never;
 
-type MethodNames<T> = keyof {
-  [K in keyof T]: T[K] extends ((...arg: any[]) => any) ? K : never
+type MethodsOf<T> = {
+  [K in keyof T]: T[K] extends ((...arg: any[]) => any) ? T[K] : never
 };
 
 /**
@@ -14,10 +14,10 @@ export function chain<V>(value: V): {
     ...args: ParametersExceptFirst<Func>
   ): ReturnType<typeof chain<ReturnType<Func>>>,
 
-  fn<Name extends MethodNames<V>>(
+  fn<Name extends keyof MethodsOf<V>>(
     func: Name,
-    ...args: V extends { [k:string|number|symbol]: any} ? Parameters<V[Name]> : never
-  ): ReturnType<typeof chain<ReturnType<V[Name]>>>,
+    ...args: Parameters<MethodsOf<V>[Name]>
+  ): ReturnType<typeof chain<ReturnType<MethodsOf<V>[Name]>>>,
 
   value: V
 } {

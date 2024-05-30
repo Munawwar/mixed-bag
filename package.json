@@ -1,6 +1,6 @@
 {
 	"name": "mixed-bag",
-	"version": "0.14.0",
+	"version": "0.14.1",
 	"description": "A modern lodash variant for modern browsers",
 	"keywords": [
 		"lodash",
