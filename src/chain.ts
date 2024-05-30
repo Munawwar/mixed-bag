@@ -16,7 +16,7 @@ export function chain<V>(value: V): {
 
   fn<Name extends keyof MethodsOf<V>>(
     func: Name,
-    ...args: Parameters<MethodsOf<V>[Name]>
+    ...args: V[Name] extends ((...args: infer P) => any) ? P : never
   ): ReturnType<typeof chain<ReturnType<MethodsOf<V>[Name]>>>,
 
   value: V
