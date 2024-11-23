@@ -8,6 +8,11 @@ describe("get", () => {
 		expect(get(obj, "a[0].b.c")).toEqual(3);
 	});
 
+	it("should support paths with quotes", () => {
+		expect(get(obj, "a['0'].b.c")).toEqual(3);
+		expect(get(obj, 'a["0"].b.c')).toEqual(3);
+	});
+
 	it("should support array paths", () => {
 		expect(get(obj, ["a", "0", "b", "c"])).toEqual(3);
 	});
