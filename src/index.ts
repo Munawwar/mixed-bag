@@ -228,6 +228,7 @@ export function at(
 	return out;
 }
 
+const pathCache: { [path: string]: string[] } = {};
 /**
  * Return item by path or default value if not present
  */
@@ -235,20 +236,49 @@ export function get<T = any>(
 	source: Record<string, unknown> | any[],
 	path: string | number | Array<string | number>,
 	defaultValue?: T,
+	cache = true,
 ): T | undefined {
-	if (isArray(path)) {
-		path = path.join(".");
+	path = isArray(path) ? path.join(".") : String(path);
+
+	// Super-optimized path parsing + caching
+	let parts = pathCache[path];
+	if (!pathCache[path]) {
+		parts = [];
+		let prevIndex = 0;
+		for (let i = 0; i < path.length; i += 1) {
+			const ch = path[i];
+			if (ch === "." || ch === "[" || ch === "]") {
+				const part = path.slice(
+					prevIndex,
+					ch === "]" && (path[i - 1] === '"' || path[i - 1] === "'")
+						? i - 1
+						: i,
+				);
+				prevIndex =
+					i +
+					(ch === "[" && (path[i + 1] === '"' || path[i + 1] === "'") ? 2 : 1);
+				if (part !== "") {
+					parts.push(part);
+				}
+			}
+		}
+		if (prevIndex < path.length) {
+			const part = path.slice(prevIndex);
+			if (part !== "") {
+				parts.push(part);
+			}
+		}
+		if (cache) {
+			pathCache[path] = parts;
+		}
 	}
 
-	const parts = String(path).split(/[.[\]]/g);
 	let haystack: any = source;
 	for (let i = 0; i < parts.length; i++) {
 		const part = parts[i];
-		if (part === "") continue;
 		if (!(part in haystack)) return defaultValue;
 		haystack = haystack[part];
 	}
-
 	return haystack;
 }
 
