@@ -228,50 +228,25 @@ export function at(
 	return out;
 }
 
-const pathCache: { [path: string]: string[] } = {};
+const pathSplitRegex = /(?:\.|(?:\[['"]?))|(?:['"]?\])/;
 /**
  * Return item by path or default value if not present
+ * @param source - object or array to get value from
+ * @param path - path to get value from. e.g "a.c[0].d['0']" or ["a", "b", "c"]
+ * @param defaultValue - (optional) default value to return if path is not present
+ * @param cache - (optional) pass a plain object to cache paths to avoid recomputing then in future
  */
 export function get<T = any>(
 	source: Record<string, unknown> | any[],
 	path: string | number | Array<string | number>,
 	defaultValue?: T,
-	cache = true,
+	cache?: { [path: string]: string[] },
 ): T | undefined {
 	path = isArray(path) ? path.join(".") : String(path);
 
-	// Super-optimized path parsing + caching
-	let parts = pathCache[path];
-	if (!pathCache[path]) {
-		parts = [];
-		let prevIndex = 0;
-		for (let i = 0; i < path.length; i += 1) {
-			const ch = path[i];
-			if (ch === "." || ch === "[" || ch === "]") {
-				const part = path.slice(
-					prevIndex,
-					ch === "]" && (path[i - 1] === '"' || path[i - 1] === "'")
-						? i - 1
-						: i,
-				);
-				prevIndex =
-					i +
-					(ch === "[" && (path[i + 1] === '"' || path[i + 1] === "'") ? 2 : 1);
-				if (part !== "") {
-					parts.push(part);
-				}
-			}
-		}
-		if (prevIndex < path.length) {
-			const part = path.slice(prevIndex);
-			if (part !== "") {
-				parts.push(part);
-			}
-		}
-		if (cache) {
-			pathCache[path] = parts;
-		}
-	}
+	const parts =
+		cache?.[path] || path.split(pathSplitRegex).filter(part => part !== "");
+	if (cache && !cache[path]) cache[path] = parts;
 
 	let haystack: any = source;
 	for (let i = 0; i < parts.length; i++) {
