@@ -190,128 +190,117 @@ export function reverse<T>(arr: T[]): T[] {
 	return createArray(arr).slice().reverse();
 }
 
+const pathSplitRegex = /(?:\.|(?:\[['"]?))|(?:['"]?\])/;
 /**
  * Get multiple object or array value by paths. Example path: `a[0].b.c`
  */
-export const at = (() => {
-	const pathSplitRegex = /(?:\.|(?:\[['"]?))|(?:['"]?\])/;
-	return function at(
-		source: Record<string, unknown> | any[],
-		paths: string[] | string,
-	) {
-		const out = [];
+export function at(
+	source: Record<string, unknown> | any[],
+	paths: string[] | string,
+) {
+	const out = [];
 
-		if (typeof paths === "string") {
-			paths = [paths];
+	if (typeof paths === "string") {
+		paths = [paths];
+	}
+
+	for (let i = 0; i < paths.length; i++) {
+		const path: string = paths[i] || "";
+		const parts = String(path).split(pathSplitRegex);
+		let haystack: any = source;
+		let found = true;
+		for (let i = 0; i < parts.length; i++) {
+			const part = parts[i];
+			if (part === "") continue;
+			if (!(part in haystack)) {
+				found = false;
+				break;
+			}
+			haystack = haystack[part];
 		}
 
-		for (let i = 0; i < paths.length; i++) {
-			const path: string = paths[i] || "";
-			const parts = String(path).split(pathSplitRegex);
-			let haystack: any = source;
-			let found = true;
-			for (let i = 0; i < parts.length; i++) {
-				const part = parts[i];
-				if (part === "") continue;
-				if (!(part in haystack)) {
-					found = false;
-					break;
-				}
-				haystack = haystack[part];
-			}
-
-			if (found) {
-				out.push(haystack);
-			}
+		if (found) {
+			out.push(haystack);
 		}
+	}
 
-		return out;
-	};
-})();
+	return out;
+}
 
 /**
  * Return item by path or default value if not present
  */
-export const get = (() => {
-	const pathSplitRegex = /(?:\.|(?:\[['"]?))|(?:['"]?\])/;
-	return function get<T = any>(
-		source: Record<string, unknown> | any[],
-		path: string | number | Array<string | number>,
-		defaultValue?: T,
-	): T | undefined {
-		if (Array.isArray(path)) {
-			path = path.join(".");
-		}
+export function get<T = any>(
+	source: Record<string, unknown> | any[],
+	path: string | number | Array<string | number>,
+	defaultValue?: T,
+): T | undefined {
+	if (Array.isArray(path)) {
+		path = path.join(".");
+	}
 
-		const parts = String(path).split(pathSplitRegex);
-		let haystack: any = source;
-		for (let i = 0; i < parts.length; i++) {
-			const part = parts[i];
-			if (part === "") continue;
-			if (!(part in haystack)) return defaultValue;
-			haystack = haystack[part];
-		}
+	const parts = String(path).split(pathSplitRegex);
+	let haystack: any = source;
+	for (let i = 0; i < parts.length; i++) {
+		const part = parts[i];
+		if (part === "") continue;
+		if (!(part in haystack)) return defaultValue;
+		haystack = haystack[part];
+	}
 
-		return haystack;
-	};
-})();
+	return haystack;
+}
 
-export const set = (() => {
-	const pathSplitRegex = /(?:\.|(?:\[['"]?))|(?:['"]?\])/;
-	return function set<T = any>(
-		target: Record<string, unknown> | any[],
-		path: string | number | Array<string | number>,
-		value?: T,
-	): typeof target {
-		if (Array.isArray(path)) {
-			path = path.join(".");
-		}
+export function set<T = any>(
+	target: Record<string, unknown> | any[],
+	path: string | number | Array<string | number>,
+	value?: T,
+): typeof target {
+	if (Array.isArray(path)) {
+		path = path.join(".");
+	}
 
-		const parts = String(path).split(pathSplitRegex);
-		let obj: any = target || {};
-		for (let i = 0; i < parts.length; i++) {
-			const part = parts[i];
-			if (part === "") continue;
-			if (i === parts.length - 1) {
-				obj[part] = value;
-			} else {
-				if (!obj[part]) {
-					const isNumeric = /^\d+$/.test(String(part));
-					obj[part] = isNumeric ? [] : {};
-				}
-				obj = obj[part];
+	const parts = String(path).split(pathSplitRegex);
+	let obj: any = target || {};
+	for (let i = 0; i < parts.length; i++) {
+		const part = parts[i];
+		if (part === "") continue;
+		if (i === parts.length - 1) {
+			obj[part] = value;
+		} else {
+			if (!obj[part]) {
+				const isNumeric = /^\d+$/.test(String(part));
+				obj[part] = isNumeric ? [] : {};
 			}
+			obj = obj[part];
 		}
+	}
 
-		return target;
-	};
-})();
+	return target;
+}
 
-export const unset = (() => {
-	const pathSplitRegex = /(?:\.|(?:\[['"]?))|(?:['"]?\])/;
-	return function unset(
-		target: Record<string, unknown> | any[],
-		path: string | number | Array<string | number>,
-	): typeof target {
-		if (Array.isArray(path)) {
-			path = path.join(".");
+export function unset(
+	target: Record<string, unknown> | any[],
+	path: string | number | Array<string | number>,
+): typeof target {
+	if (Array.isArray(path)) {
+		path = path.join(".");
+	}
+
+	const parts = String(path).split(pathSplitRegex);
+	let obj: any = target || {};
+	for (let i = 0; obj && i < parts.length; i++) {
+		const part = parts[i];
+		if (part === "") continue;
+		if (i === parts.length - 1) {
+			delete obj[part];
+		} else {
+			obj = obj[part];
 		}
+	}
 
-		const parts = String(path).split(pathSplitRegex);
-		let obj: any = target || {};
-		for (let i = 0; obj && i < parts.length; i++) {
-			const part = parts[i];
-			if (part === "") continue;
-			if (i === parts.length - 1) {
-				delete obj[part];
-			} else {
-				obj = obj[part];
-			}
-		}
-
-		return target;
-	};
-})();
+	return target;
+}
 
 const empty = {};
 /**
@@ -1034,48 +1023,46 @@ export function inRange(number: number, start: number, end?: number) {
 
 // escape and unescape functions
 
-export const escape = (() => {
-	const reUnescapedHtml = /[&<>"']/g;
-	const reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
-	const htmlEscapes = {
-		"&": "&amp;",
-		"<": "&lt;",
-		">": "&gt;",
-		'"': "&quot;",
-		"'": "&#39;",
-	};
-	function escapeHtmlChar(key: keyof typeof htmlEscapes): string {
-		return htmlEscapes[key];
-	}
-	return function escape(string: string) {
-		string = String(string);
-		return string && reHasUnescapedHtml.test(string)
-			? string.replace(reUnescapedHtml, escapeHtmlChar as (k: string) => string)
-			: string;
-	};
-})();
+const reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
+const reUnescapedHtml = /[&<>"']/g;
+const reHasEscapedHtml = RegExp(reEscapedHtml.source);
+const reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
+const htmlEscapes = {
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&quot;",
+	"'": "&#39;",
+};
+const htmlUnescapes = {
+	"&amp;": "&",
+	"&lt;": "<",
+	"&gt;": ">",
+	"&quot;": '"',
+	"&#39;": "'",
+};
 
-export const unescape = (() => {
-	const reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
-	const reHasEscapedHtml = RegExp(reEscapedHtml.source);
-	const htmlUnescapes = {
-		"&amp;": "&",
-		"&lt;": "<",
-		"&gt;": ">",
-		"&quot;": '"',
-		"&#39;": "'",
-	};
+function escapeHtmlChar(key: keyof typeof htmlEscapes): string {
+	return htmlEscapes[key];
+}
 
-	function unescapeHtmlChar(key: keyof typeof htmlUnescapes): string {
-		return htmlUnescapes[key];
-	}
-	return function unescape(string: string) {
-		string = String(string);
-		return string && reHasEscapedHtml.test(string)
-			? string.replace(reEscapedHtml, unescapeHtmlChar as (k: string) => string)
-			: string;
-	};
-})();
+function unescapeHtmlChar(key: keyof typeof htmlUnescapes): string {
+	return htmlUnescapes[key];
+}
+
+export function escape(string: string) {
+	string = String(string);
+	return string && reHasUnescapedHtml.test(string)
+		? string.replace(reUnescapedHtml, escapeHtmlChar as (k: string) => string)
+		: string;
+}
+
+export function unescape(string: string) {
+	string = String(string);
+	return string && reHasEscapedHtml.test(string)
+		? string.replace(reEscapedHtml, unescapeHtmlChar as (k: string) => string)
+		: string;
+}
 
 export function sum(array: number[]) {
 	return createArray(array).reduce((count, val) => count + val, 0);

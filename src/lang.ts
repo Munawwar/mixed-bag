@@ -29,13 +29,11 @@ export function isObjectLike(val: any) {
 	return val != null && typeof val == "object";
 }
 
-export const isPlainObject = (() => {
-	const objectPrototype = Object.getPrototypeOf({});
-	return function isPlainObject(val: any) {
-		if (!isObjectLike(val)) return false;
-		return Object.getPrototypeOf(val) === objectPrototype;
-	};
-})();
+const objectPrototype = Object.getPrototypeOf({});
+export function isPlainObject(val: any) {
+	if (!isObjectLike(val)) return false;
+	return Object.getPrototypeOf(val) === objectPrototype;
+}
 
 export function isUndefined(v: any) {
 	return v === undefined;
@@ -49,12 +47,10 @@ export function isString(v: any) {
 	return Number.isFinite(v) && v === Math.trunc(v);
 }
 
-export const isTypedArray = (() => {
-	const typedArrayProto = Object.getPrototypeOf(Int8Array);
-	return function isTypedArray(v: any) {
-		return Object.getPrototypeOf(v) === typedArrayProto;
-	};
-})();
+const typedArrayProto = Object.getPrototypeOf(Int8Array);
+export function isTypedArray(v: any) {
+	return Object.getPrototypeOf(v) === typedArrayProto;
+}
 
 export function isSymbol(v: any) {
 	return typeof v === "symbol";
