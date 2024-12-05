@@ -18,7 +18,7 @@ export function castArray<T>(v?: T | T[]): T[] {
 /**
  * (Non-lodash function) Defensively create an array if not one.
  */
-export function createArray(arr: any) {
+export function createArray(arr: any|any[]) {
 	return Array.isArray(arr) ? arr : [];
 }
 
@@ -550,7 +550,7 @@ export function difference<T>(
  * Creates an array of unique values (in-order).
  */
 export function union<T>(...arrays: readonly T[][]): T[] {
-	return uniqBy(createArray(arrays).flatMap(createArray), identity);
+	return uniqBy(createArray(arrays).flatMap(createArray) as T[], identity);
 }
 
 /**
