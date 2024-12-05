@@ -3,8 +3,6 @@ export * from "./lang";
 export * from "./string";
 export * from "./chain";
 
-const { isArray } = Array;
-
 export function identity<T>(v: T): T {
 	return v;
 }
@@ -14,14 +12,14 @@ export const noop = () => undefined;
 export function castArray<T>(v?: T | T[]): T[] {
 	if (!arguments.length) return [];
 	// @ts-ignore
-	return isArray(v) ? v : [v];
+	return Array.isArray(v) ? v : [v];
 }
 
 /**
  * (Non-lodash function) Defensively create an array if not one.
  */
 export function createArray(arr: any) {
-	return isArray(arr) ? arr : [];
+	return Array.isArray(arr) ? arr : [];
 }
 
 /**
@@ -70,7 +68,7 @@ export function iteratee<T, K extends keyof T, Out>(
 	let fn;
 	if (typeof iter === "string") {
 		fn = (item: T) => (item?.[(iter as unknown) as keyof T] as unknown) as Out;
-	} else if (isArray(iter)) {
+	} else if (Array.isArray(iter)) {
 		fn = (item: T) => item?.[iter[0]] === iter[1];
 	} else if (isObjectLike(iter)) {
 		fn = (item: T) =>
@@ -104,7 +102,7 @@ const createPredicate = <T>(
 	let fn;
 	if (typeof predicate === "string") {
 		fn = (item: T) => !!(item as any)?.[predicate];
-	} else if (isArray(predicate)) {
+	} else if (Array.isArray(predicate)) {
 		fn = (item: T) => (item as any)?.[predicate[0]] === predicate[1];
 	} else if (typeof predicate === "object") {
 		fn = (item: T) => {
@@ -236,7 +234,7 @@ export function get<T = any>(
 	path: string | number | Array<string | number>,
 	defaultValue?: T,
 ): T | undefined {
-	if (isArray(path)) {
+	if (Array.isArray(path)) {
 		path = path.join(".");
 	}
 
@@ -257,7 +255,7 @@ export function set<T = any>(
 	path: string | number | Array<string | number>,
 	value?: T,
 ): typeof target {
-	if (isArray(path)) {
+	if (Array.isArray(path)) {
 		path = path.join(".");
 	}
 
@@ -284,7 +282,7 @@ export function unset(
 	target: Record<string, unknown> | any[],
 	path: string | number | Array<string | number>,
 ): typeof target {
-	if (isArray(path)) {
+	if (Array.isArray(path)) {
 		path = path.join(".");
 	}
 
@@ -321,7 +319,7 @@ export function pick<T extends Record<string, unknown>>(
 	obj: T,
 	path: string | string[],
 ): Partial<T> {
-	const paths = !isArray(path) ? [path] : path;
+	const paths = !Array.isArray(path) ? [path] : path;
 	const out: Partial<T> = {};
 	paths.forEach(path => {
 		set(out, path, get(obj, path));
@@ -355,7 +353,7 @@ export function omit<T extends Record<string, unknown>>(
 	path: string | string[],
 ): Partial<T> {
 	if (!obj) return {};
-	const paths = !isArray(path) ? [path] : path;
+	const paths = !Array.isArray(path) ? [path] : path;
 	const isDeep = paths.some(path => /[.[\]]/.test(path));
 	const out: Partial<T> = isDeep ? cloneDeep(obj) : { ...obj }; // lodash does a deep clone only for deep paths
 	paths.forEach(path => {
@@ -392,7 +390,7 @@ export function forEach<T>(
 	value: T,
 	callback: (value: any, index: number | string, collection: T) => void,
 ) {
-	if (isArray(value)) {
+	if (Array.isArray(value)) {
 		value.forEach(callback as any);
 	} else if (value instanceof Set || value instanceof Map) {
 		value.forEach(callback as any);
@@ -575,7 +573,7 @@ export function flow(...fns: AnyFunction[]) {
  * Shallow clone of a value
  */
 export function clone<T>(value: T): T {
-	if (isArray(value)) {
+	if (Array.isArray(value)) {
 		return value.slice() as any;
 	} else if (value instanceof RegExp) {
 		return new RegExp(value.source, value.flags) as any;
@@ -597,7 +595,7 @@ export function clone<T>(value: T): T {
 export function cloneDeep<T>(value: T): T {
 	// Can't use structuredClone native function yet as it is not available in workers
 	// nor in currently 'live' Safari versions
-	if (isArray(value)) {
+	if (Array.isArray(value)) {
 		return value.slice().map(cloneDeep) as any;
 	} else if (value instanceof RegExp) {
 		return new RegExp(value.source, value.flags) as any;
@@ -651,7 +649,7 @@ export function findIndex<T>(
 	predicate: PredicateConvertibleTypes<T> = x => !!x,
 	fromIndex = 0,
 ): number {
-	if (!isArray(collection)) return -1;
+	if (!Array.isArray(collection)) return -1;
 	const fn = createPredicate(predicate);
 	for (let i = fromIndex; i < collection.length; i++) {
 		if ((fn as any)(collection[i], i, collection)) {
@@ -669,7 +667,7 @@ export function findLastIndex<T>(
 	predicate: PredicateConvertibleTypes<T> = x => !!x,
 	fromIndex = 0,
 ): number {
-	if (!isArray(collection)) return -1;
+	if (!Array.isArray(collection)) return -1;
 	const fn = createPredicate(predicate);
 	for (let i = collection.length - 1; i >= fromIndex; i--) {
 		if ((fn as any)(collection[i], i, collection)) {
@@ -814,7 +812,7 @@ export function isEqual<T>(a: T, b: T): boolean {
 	if (a === b) return true; // fast path
 	if (a === null || b === null) {
 		return a === b;
-	} else if (isArray(a) && isArray(b)) {
+	} else if (Array.isArray(a) && Array.isArray(b)) {
 		if (a.length !== b.length) return false;
 
 		for (let i = 0; i < a.length; i++) {
