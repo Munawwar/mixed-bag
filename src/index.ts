@@ -1024,46 +1024,48 @@ export function inRange(number: number, start: number, end?: number) {
 
 // escape and unescape functions
 
-const reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
-const reUnescapedHtml = /[&<>"']/g;
-const reHasEscapedHtml = RegExp(reEscapedHtml.source);
-const reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
-const htmlEscapes = {
-	"&": "&amp;",
-	"<": "&lt;",
-	">": "&gt;",
-	'"': "&quot;",
-	"'": "&#39;",
-};
-const htmlUnescapes = {
-	"&amp;": "&",
-	"&lt;": "<",
-	"&gt;": ">",
-	"&quot;": '"',
-	"&#39;": "'",
-};
+export const escape = (() => {
+	const reUnescapedHtml = /[&<>"']/g;
+	const reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
+	const htmlEscapes = {
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': "&quot;",
+		"'": "&#39;",
+	};
+	function escapeHtmlChar(key: keyof typeof htmlEscapes): string {
+		return htmlEscapes[key];
+	}
+	return function escapeClosure(string: string) {
+		string = String(string);
+		return string && reHasUnescapedHtml.test(string)
+			? string.replace(reUnescapedHtml, escapeHtmlChar as (k: string) => string)
+			: string;
+	};
+})();
 
-function escapeHtmlChar(key: keyof typeof htmlEscapes): string {
-	return htmlEscapes[key];
-}
+export const unescape = (() => {
+	const reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
+	const reHasEscapedHtml = RegExp(reEscapedHtml.source);
+	const htmlUnescapes = {
+		"&amp;": "&",
+		"&lt;": "<",
+		"&gt;": ">",
+		"&quot;": '"',
+		"&#39;": "'",
+	};
 
-function unescapeHtmlChar(key: keyof typeof htmlUnescapes): string {
-	return htmlUnescapes[key];
-}
-
-export function escape(string: string) {
-	string = String(string);
-	return string && reHasUnescapedHtml.test(string)
-		? string.replace(reUnescapedHtml, escapeHtmlChar as (k: string) => string)
-		: string;
-}
-
-export function unescape(string: string) {
-	string = String(string);
-	return string && reHasEscapedHtml.test(string)
-		? string.replace(reEscapedHtml, unescapeHtmlChar as (k: string) => string)
-		: string;
-}
+	function unescapeHtmlChar(key: keyof typeof htmlUnescapes): string {
+		return htmlUnescapes[key];
+	}
+	return function unescapeClosure(string: string) {
+		string = String(string);
+		return string && reHasEscapedHtml.test(string)
+			? string.replace(reEscapedHtml, unescapeHtmlChar as (k: string) => string)
+			: string;
+	};
+})();
 
 export function sum(array: number[]) {
 	return createArray(array).reduce((count, val) => count + val, 0);
