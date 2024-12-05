@@ -1,5 +1,5 @@
-src/
-tsconfig*
-yarn.lock
 __ignore__/
+src/
+tools/
 .prettierignore
+tsconfig*

@@ -135,7 +135,9 @@ chain([1,2,3])
 
 ```bash
 npm install mixed-bag
-# or via yarn
+# or pnpm
+pnpm add mixed-bag
+# or via yarn (v1)
 yarn add mixed-bag
 ```
 
