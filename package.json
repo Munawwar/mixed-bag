@@ -1,6 +1,6 @@
 {
 	"name": "mixed-bag",
-	"version": "0.15.1",
+	"version": "0.15.2",
 	"description": "A modern lodash variant for modern browsers",
 	"keywords": [
 		"lodash",
@@ -28,7 +28,8 @@
 		"build": "rimraf dist/ && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && ts-node tools/postbuild.ts",
 		"lint": "eslint src/",
 		"lint-fix": "eslint --fix src/",
-		"test": "mocha -r ts-node/register --extensions ts,tsx  --watch --watch-files src  'tests/*.test.ts' 'tests/**/*.test.ts'",
+		"test": "mocha -r ts-node/register --extensions ts,tsx 'tests/*.test.ts' 'tests/**/*.test.ts'",
+		"test-watch": "mocha -r ts-node/register --extensions ts,tsx --watch --watch-files src 'tests/*.test.ts' 'tests/**/*.test.ts'",
 		"test-one": "mocha -r ts-node/register --extensions ts,tsx --watch --watch-files src,tests",
 		"prepublishOnly": "npm test && npm run build"
 	},
