@@ -1,3 +1,7 @@
+export * from "./isTypedArray";
+export * from "./isObjectLike";
+export * from "./isPlainObject";
+
 /**
  * Check if a collection (Array, Map, Set, Object) is empty
  */
@@ -25,16 +29,6 @@ export function isObject(v: any) {
 	return v != null && (type == "object" || type == "function");
 }
 
-export function isObjectLike(val: any) {
-	return val != null && typeof val == "object";
-}
-
-const objectPrototype = Object.getPrototypeOf({});
-export function isPlainObject(val: any) {
-	if (!isObjectLike(val)) return false;
-	return Object.getPrototypeOf(val) === objectPrototype;
-}
-
 export function isUndefined(v: any) {
 	return v === undefined;
 }
@@ -45,11 +39,6 @@ export function isInteger(v: any) {
 
 export function isString(v: any) {
 	return Number.isFinite(v) && v === Math.trunc(v);
-}
-
-const typedArrayProto = Object.getPrototypeOf(Int8Array);
-export function isTypedArray(v: any) {
-	return Object.getPrototypeOf(v) === typedArrayProto;
 }
 
 export function isSymbol(v: any) {

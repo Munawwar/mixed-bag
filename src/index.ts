@@ -1,4 +1,4 @@
-import { isObjectLike } from "./lang";
+import { isObjectLike } from "./isObjectLike";
 export * from "./lang";
 export * from "./string";
 export * from "./chain";
