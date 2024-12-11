@@ -3,6 +3,10 @@ export * from "./lang";
 export * from "./string";
 export * from "./chain";
 
+// escape and unescape functions
+export * from "./escape";
+export * from "./unescape";
+
 export function identity<T>(v: T): T {
 	return v;
 }
@@ -1019,49 +1023,6 @@ export function inRange(number: number, start: number, end?: number) {
 	const lower = Math.min(start, end);
 	const upper = Math.max(start, end);
 	return number >= lower && number < upper;
-}
-
-// escape and unescape functions
-
-const reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
-const reUnescapedHtml = /[&<>"']/g;
-const reHasEscapedHtml = RegExp(reEscapedHtml.source);
-const reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
-const htmlEscapes = {
-	"&": "&amp;",
-	"<": "&lt;",
-	">": "&gt;",
-	'"': "&quot;",
-	"'": "&#39;",
-};
-const htmlUnescapes = {
-	"&amp;": "&",
-	"&lt;": "<",
-	"&gt;": ">",
-	"&quot;": '"',
-	"&#39;": "'",
-};
-
-function escapeHtmlChar(key: keyof typeof htmlEscapes): string {
-	return htmlEscapes[key];
-}
-
-function unescapeHtmlChar(key: keyof typeof htmlUnescapes): string {
-	return htmlUnescapes[key];
-}
-
-export function escape(string: string) {
-	string = String(string);
-	return string && reHasUnescapedHtml.test(string)
-		? string.replace(reUnescapedHtml, escapeHtmlChar as (k: string) => string)
-		: string;
-}
-
-export function unescape(string: string) {
-	string = String(string);
-	return string && reHasEscapedHtml.test(string)
-		? string.replace(reEscapedHtml, unescapeHtmlChar as (k: string) => string)
-		: string;
 }
 
 export function sum(array: number[]) {
